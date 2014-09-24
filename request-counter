@@ -1,0 +1,117 @@
+#!/usr/bin/env python
+
+import sys ,string, os, re
+from urlparse import urlparse, parse_qsl, urljoin
+from optparse import OptionParser
+
+_usage = "Usage: %prog -f FILE [option]"
+
+parser = OptionParser(usage = _usage)
+parser.add_option("-f", "--file", dest="file", type="string", action="store", 
+                  help="path to log file")
+parser.add_option("-r", "--reverse", dest="reverse", action="store_true", default=False,
+                  help="reverse the result of comparisons")
+parser.add_option("--sort-min", dest="sort_min", action="store_true", default=False,
+                  help="sort by min")
+parser.add_option("--sort-max", dest="sort_max", action="store_true", default=False,
+                  help="sort by max")
+parser.add_option("--sort-avg", dest="sort_avg", action="store_true", default=False,
+                  help="sort by avg")
+parser.add_option("--no-headers", dest="header", action="store_false", default=True,
+                  help="print no header line at all")
+
+(options, _) = parser.parse_args()
+
+if options.file is None:
+    parser.print_help()
+    exit(0)
+
+if not os.path.exists(options.file):
+    exit("File does not exist: '%s'" % options.file)
+
+if options.sort_max:
+    sort_key = "max"
+elif options.sort_min:
+    sort_key = "min"
+elif options.sort_avg:
+    sort_key = "avg"
+else:
+    sort_key = "count"
+
+uri_data = {}
+
+def gen_key(uri):
+    list = []
+    for query in parse_qsl(urlparse(uri).query):
+        list.append(query[0] + "=" + "xxx")
+
+    list.sort()
+
+    if len(list) == 0:
+        return urlparse(uri).path
+    else:
+        return urlparse(uri).path + "?" + "&".join(list)
+    
+def count(key):
+    if not uri_data.has_key(key):
+        uri_data[key] = {"count": 0, "min": None, "max": 0, "avg": 0}
+
+    uri_data[key]["count"] += 1
+
+def calc(key, res_time):
+    try:
+        res_time = float(res_time)
+    except ValueError as e:
+        exit("Invlid value: %s" % res_time)
+
+    if uri_data[key]["max"] < res_time:
+        uri_data[key]["max"] = res_time
+        
+    if uri_data[key]["min"] >= res_time or uri_data[key]["min"] is None:
+        uri_data[key]["min"] = res_time
+
+    uri_data[key]["avg"] += res_time
+
+for line in open(options.file).readlines():
+    lines = re.split(" ", string.strip(line))
+    if lines[0] == "":
+        continue
+
+    uri = string.strip(lines[0])
+    key = gen_key(uri)
+    
+    count(key)
+
+    if len(lines) > 1:
+        is_calc = True
+        calc(key, lines[1])
+
+if options.header:
+    sys.stdout.write("Line of text: count")
+
+    if is_calc:
+        sys.stdout.write(", min")
+        sys.stdout.write(", max")
+        sys.stdout.write(", avg")
+    
+    sys.stdout.write(", uri")
+
+    print
+    print
+
+if is_calc:
+    for key in uri_data.keys():
+        uri_data[key]["avg"] = uri_data[key]["avg"] / uri_data[key]["count"]
+    
+for data in sorted(uri_data.items(),key=lambda x:x[1][sort_key], reverse=options.reverse):
+    
+    sys.stdout.write(str(data[1]["count"]))
+
+    if is_calc:
+        sys.stdout.write("\t{0:.3f}".format(data[1]["min"]))
+        sys.stdout.write("\t{0:.3f}".format(data[1]["max"]))
+        sys.stdout.write("\t{0:.3f}".format(data[1]["avg"]))
+
+    sys.stdout.write("\t" + data[0])
+
+    print
