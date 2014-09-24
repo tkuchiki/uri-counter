@@ -1,0 +1,14 @@
+/api/test?foo=bar&ho=ge 0.1
+/api/test?ho=geee&foo=baar 0.2
+/api/foo 0.01
+/api/foo 0.03
+/api/foo 0.05
+/api/foo 0.07
+/api/foo 0.09
+/api/bar 0.08
+/api/bar 0.3
+/api/bar 0.06
+/api/bar 0.04
+/api/hoge 0.3
+/api/hoge 0.2
+/api/hoge 0.3
