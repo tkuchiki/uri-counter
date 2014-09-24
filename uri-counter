@@ -62,7 +62,7 @@ def calc(key, res_time):
     try:
         res_time = float(res_time)
     except ValueError as e:
-        exit("Invlid value: %s" % res_time)
+        res_time = 0
 
     if uri_data[key]["max"] < res_time:
         uri_data[key]["max"] = res_time
@@ -71,6 +71,8 @@ def calc(key, res_time):
         uri_data[key]["min"] = res_time
 
     uri_data[key]["avg"] += res_time
+
+is_calc = False
 
 for line in open(options.file).readlines():
     lines = re.split(" ", string.strip(line))
@@ -104,14 +106,16 @@ if is_calc:
         uri_data[key]["avg"] = uri_data[key]["avg"] / uri_data[key]["count"]
     
 for data in sorted(uri_data.items(),key=lambda x:x[1][sort_key], reverse=options.reverse):
-    
-    sys.stdout.write(str(data[1]["count"]))
+    output_line = str(data[1]["count"])
 
     if is_calc:
-        sys.stdout.write("\t{0:.3f}".format(data[1]["min"]))
-        sys.stdout.write("\t{0:.3f}".format(data[1]["max"]))
-        sys.stdout.write("\t{0:.3f}".format(data[1]["avg"]))
+        try:
+            output_line += ("\t{0:.3f}".format(data[1]["min"]) +
+                            "\t{0:.3f}".format(data[1]["max"]) +
+                            "\t{0:.3f}".format(data[1]["avg"]))
+        except ValueError as e:
+            continue
 
-    sys.stdout.write("\t" + data[0])
+    sys.stdout.write(output_line + "\t" + data[0])
 
     print
