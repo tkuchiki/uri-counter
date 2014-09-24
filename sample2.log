@@ -1,0 +1,6 @@
+/api/hoge
+/api/test?foo=bar
+/api/test?foo=baar
+/api/test?foo=baaar
+/api/hoge
+/api/foobar

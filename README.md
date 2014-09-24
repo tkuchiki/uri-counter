@@ -25,7 +25,7 @@ Options:
   --no-headers          print no header line at all
 ~~~~
 
-## sample
+## sample (count and min, max, avg)
 
 sample log file
 
@@ -92,4 +92,28 @@ Line of text: count, min, max, avg, uri
 2       0.100   0.200   0.150   /api/test?foo=xxx&ho=xxx
 4       0.040   0.300   0.120   /api/bar
 5       0.010   0.090   0.050   /api/foo
+~~~~
+
+## sample (count)
+
+sample log file
+
+~~~~
+/api/hoge
+/api/test?foo=bar
+/api/test?foo=baar
+/api/test?foo=baaar
+/api/hoge
+/api/foobar
+~~~~
+
+### sort by count
+
+~~~~
+$ ./uri-counter -f sample2.log -r
+Line of text: count, uri
+
+3       /api/test?foo=xxx
+2       /api/hoge
+1       /api/foobar
 ~~~~
