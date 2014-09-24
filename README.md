@@ -1,4 +1,4 @@
-request-counter
+uri-counter
 ===============
 
 URI counter
