@@ -3,6 +3,12 @@ uri-counter
 
 URI counter
 
+## Installation
+
+~~~~
+$ curl https://raw.githubusercontent.com/tkuchiki/uri-counter/master/uri-counter -o /usr/local/bin/uri-counter && chmod +x /usr/local/bin/uri-counter
+~~~~
+
 ## usage
 
 ~~~~
