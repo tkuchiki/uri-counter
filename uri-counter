@@ -19,6 +19,8 @@ parser.add_option("--sort-max", dest="sort_max", action="store_true", default=Fa
                   help="sort by max")
 parser.add_option("--sort-avg", dest="sort_avg", action="store_true", default=False,
                   help="sort by avg")
+parser.add_option("--sort-method", dest="sort_method", action="store_true", default=False,
+                  help="sort by method")
 parser.add_option("--no-headers", dest="header", action="store_false", default=True,
                   help="print no header line at all")
 
@@ -37,12 +39,14 @@ elif options.sort_min:
     sort_key = "min"
 elif options.sort_avg:
     sort_key = "avg"
+elif options.sort_method:
+    sort_key = "method"
 else:
     sort_key = "count"
 
 uri_data = {}
 
-def gen_key(uri):
+def gen_uri(uri):
     list = []
     for query in parse_qsl(urlparse(uri).query):
         list.append(query[0] + "=" + "xxx")
@@ -53,10 +57,13 @@ def gen_key(uri):
         return urlparse(uri).path
     else:
         return urlparse(uri).path + "?" + "&".join(list)
+
+def gen_key(uri, method):
+    return method + "_" + uri
     
-def count(key):
+def count(key, uri):
     if not uri_data.has_key(key):
-        uri_data[key] = {"count": 0, "min": None, "max": 0, "avg": 0}
+        uri_data[key] = {"count": 0, "min": None, "max": 0, "avg": 0, "method": method, "uri": uri}
 
     uri_data[key]["count"] += 1
 
@@ -81,17 +88,22 @@ for line in open(options.file).readlines():
     if lines[0] == "":
         continue
 
-    uri = string.strip(lines[0])
-    key = gen_key(uri)
+    if len(lines) == 3:
+        method = lines[2]
+    else:
+        method = "GET"
+        
+    uri = gen_uri(string.strip(lines[0]))
+    key = gen_key(uri, method)
     
-    count(key)
+    count(key, uri)
 
     if len(lines) > 1:
         is_calc = True
         calc(key, lines[1])
 
 if options.header:
-    sys.stdout.write("Line of text: count")
+    sys.stdout.write("Line of text: method, count")
 
     if is_calc:
         sys.stdout.write(", min")
@@ -108,7 +120,7 @@ if is_calc:
         uri_data[key]["avg"] = uri_data[key]["avg"] / uri_data[key]["count"]
     
 for data in sorted(uri_data.items(),key=lambda x:x[1][sort_key], reverse=options.reverse):
-    output_line = str(data[1]["count"])
+    output_line = data[1]["method"] + "\t" + str(data[1]["count"])
 
     if is_calc:
         try:
@@ -118,6 +130,6 @@ for data in sorted(uri_data.items(),key=lambda x:x[1][sort_key], reverse=options
         except ValueError as e:
             continue
 
-    sys.stdout.write(output_line + "\t" + data[0])
+    sys.stdout.write(output_line + "\t" + data[1]["uri"])
 
     print
