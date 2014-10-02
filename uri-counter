@@ -9,6 +9,8 @@ _usage = "Usage: %prog -f FILE [option]"
 parser = OptionParser(usage = _usage)
 parser.add_option("-f", "--file", dest="file", type="string", action="store", 
                   help="path to log file")
+parser.add_option("-d", "--delimiter", dest="delimiter", type="string", action="store", default=" ",
+                  help="field delimiter(default ' ')")
 parser.add_option("-r", "--reverse", dest="reverse", action="store_true", default=False,
                   help="reverse the result of comparisons")
 parser.add_option("--sort-min", dest="sort_min", action="store_true", default=False,
@@ -75,7 +77,7 @@ def calc(key, res_time):
 is_calc = False
 
 for line in open(options.file).readlines():
-    lines = re.split(" ", string.strip(line))
+    lines = re.split(options.delimiter, string.strip(line))
     if lines[0] == "":
         continue
 
