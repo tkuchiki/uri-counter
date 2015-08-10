@@ -83,7 +83,9 @@ def calc(key, res_time):
 
 is_calc = False
 
-for line in open(options.file).readlines():
+f = open(options.file)
+flush_counter = 0
+for line in f:
     lines = re.split(options.delimiter, string.strip(line))
     if lines[0] == "":
         continue
@@ -101,6 +103,17 @@ for line in open(options.file).readlines():
     if len(lines) > 1:
         is_calc = True
         calc(key, lines[1])
+
+    flush_counter += 1
+    if flush_counter >= 1000:
+        f.flush()
+        flush_counter = 0
+    
+    if len(uri_data) >= 1000:
+        print "Too many uri(1000 or less)"
+        sys.exit(1)
+
+f.close()
 
 if options.header:
     sys.stdout.write("Line of text: method, count")
